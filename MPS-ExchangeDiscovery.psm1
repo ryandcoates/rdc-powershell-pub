@@ -36,11 +36,6 @@ Function Get-MPSActiveDirectory{
 #> 
  
  
-# 
-# Import Module Active Directory: 
-    Write-Host "Importing Active Directory Module" -ForegroundColor 'Green' 
-     Import-Module -Name ActiveDirectory 
- 
 # Html  
 #### HTML Output Formatting ####### 
  
@@ -1840,10 +1835,6 @@ else
 #...................................
 # Script
 #...................................
-
-#Add dependencies
-Import-Module ActiveDirectory -ErrorAction STOP
-
 
 #Get the mailbox list
 
