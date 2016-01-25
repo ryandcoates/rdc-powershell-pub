@@ -3,16 +3,81 @@
     Brilliant collection of powershell scripts that I often use, combined into a single module for me to run through as needed
 .DESCRIPTION
     
-.PARAMETER LogFile
+.PARAMETER
     
 .NOTES
     Author:  Ryan Coates
+    Website: http://inquisitivegeek.com
+    Updated: 1/23/2016
+
+    Functions Modified from originals
+        Get-MPSActiveDirectory
+            Author:  Aman Dhally
+            Website: http://www.amandhally.net
+
+        Get-MPSActiveDirectoryReplication
+            Author:  ?
+            Website: ?
+
+        Get-MPSOutlookConn2010
+            Author: Mike F Robbins
+            Website http://mikefrobbins.com
+
+        Get-MPSExchangeEnvironmentReport
+            Author:  Steve Goodman
+
+        Get-MPSEASDEviceReport
+        Get-MPSMailboxReport
+        Get-MPSDAGReport
+            Author:  Paul Cunningham
+            Website: http://paulcunningham.me
+
+        Get-MPSMessageStats
+            Author:  Justin Beeden
+
+        Get-MPSVirDirInfo
+            Author:  Michael Van Horenbeeck
+            Website: http://vanhybrid.com
+
+       
+.TODO
+    Adjust and automate Output Formats / locations
+        Set-MPSEnv Configures
+        Get-MPSActiveDirectory working
+        Get-MPSActiveDirectorySchema working
+
+        Get-MPSActiveDirectoryReplication in progress
+
+        Should functionize further
+    Read In pertinent variables
+    Attribute original authors
+    Manifest Module and adopt version numbers for functions
 
 #>
 
 
 
+Function Set-MPSEnv {
+    $date = (Get-Date -Format ddMMyyhhmm).toString()
+    $client = Read-Host "Enter Client shortname: "
+    $filePATH = "$env:USERPROFILE\Desktop\"
+    $filePrefix = $client +$date
+    $dirName = "MPSGather" +"_" +$Client +$date
+    $finalPATH = Join-Path $filePATH $dirName
+    
+    $pathgood = Test-Path $finalPATH
+        If ($pathgood -eq $False){New-Item -ItemType Directory -Path $finalPATH}
+        
+        $global:MPSOutPath = $finalPATH
+        $global:MPSOutPrefix = $filePrefix
+        
+        
 
+    
+
+    
+
+}
 Function Get-MPSActiveDirectory{
 <# 
             " Satnaam WaheGuru Ji"     
@@ -31,7 +96,25 @@ Function Get-MPSActiveDirectory{
             Version : 1 
  
              
+ # If file exists 
+# Test if file exists.If exist we are delting the file and then creating a new one 
+# and if there are no file exists then we are going to create a new one  
  
+    if (Test-Path "$env:userprofile\Desktop\$filename" ) {  
+        "`n" 
+        Write-Warning "file already exists, i am deleting it." 
+        Remove-Item "$env:userprofile\Desktop\$filename" -Verbose -Force 
+        "`n" 
+        Write-Host "Creating a New file Named as $fileNAME" -ForegroundColor 'Green' 
+        New-Item -Path $filePATH -Name $fileNAME -Type file | Out-Null 
+        }  
+    else { 
+        "`n" 
+        Write-Host "Creating a New file Named as $fileNAME" -ForegroundColor 'Green' 
+        New-Item -Path $filePATH -Name $fileNAME -Type file | Out-Null 
+        "`n" 
+        } 
+### 
  
 #> 
  
@@ -45,10 +128,9 @@ Function Get-MPSActiveDirectory{
  
 # Setting Variables 
 # 
-    $date = (Get-Date -Format d_MMMM_yyyy).toString() 
-    $filePATH = "$env:userprofile\Desktop\" 
-    $fileNAME = "AD_Info_" + $date + ".html" 
-    $file = $filePATH + $fileNAME 
+    $filePATH = $global:MPSOutPath 
+    $fileNAME = "AD_Info"+ $global:MPSOutPrefix +".html" 
+    $file = $filePATH + "\" + $fileNAME 
 # 
 # Active Directory Variables 
     $adFOREST = Get-ADForest 
@@ -80,26 +162,6 @@ Function Get-MPSActiveDirectory{
     $adDOMAINReadOnlyReplica = $adDOMAIN | select -ExpandProperty ReadOnlyReplicaDirectoryServers 
      
      
- 
-# If file exists 
-# Test if file exists.If exist we are delting the file and then creating a new one 
-# and if there are no file exists then we are going to create a new one  
- 
-    if (Test-Path "$env:userprofile\Desktop\$filename" ) {  
-        "`n" 
-        Write-Warning "file already exists, i am deleting it." 
-        Remove-Item "$env:userprofile\Desktop\$filename" -Verbose -Force 
-        "`n" 
-        Write-Host "Creating a New file Named as $fileNAME" -ForegroundColor 'Green' 
-        New-Item -Path $filePATH -Name $fileNAME -Type file | Out-Null 
-        }  
-    else { 
-        "`n" 
-        Write-Host "Creating a New file Named as $fileNAME" -ForegroundColor 'Green' 
-        New-Item -Path $filePATH -Name $fileNAME -Type file | Out-Null 
-        "`n" 
-        } 
-### 
  
 # set Title of the HTML Output 
  
@@ -135,40 +197,33 @@ Function Get-MPSActiveDirectory{
     $Report  >> $file  
  
      
-    Invoke-Expression $file 
+    #Invoke-Expression $file
+    $check = Test-Path $file 
+    If ($check-eq $true){Write-Host "File Created Successfuly" -ForegroundColor Green}
+    Else {Write-Host "File not created" -ForegroundColor Red}
  
 #### end of the script ###
 }
 Function Get-MPSActiveDirectorySchema{
-Get-ADObject (Get-ADRootDSE).schemaNamingContext -Property objectVersion
+
+    $filePATH = $global:MPSOutPath 
+    $fileNAME = "AD_Schema_Info"+ $global:MPSOutPrefix +".txt"
+    $file = $filePATH + "\" + $fileNAME 
+    echo $null >> $file
+    Get-ADObject (Get-ADRootDSE).schemaNamingContext -Property objectVersion > $file
+
+    $check = Test-Path $file 
+    If ($check-eq $true){Write-Host "File Created Successfuly" -ForegroundColor Green}
+    Else {Write-Host "File not created" -ForegroundColor Red}
 }
 Function Get-MPSActiveDirectoryReplication {
 #Variable 
-$report_path = "\\server\share" 
-$date = Get-Date -Format "yyyy-MM-dd" 
+    $filePATH = $global:MPSOutPath 
+    $fileNAME = "AD_Replication_Info"+ $global:MPSOutPrefix +".html"
+    $file = $filePATH + "\" + $fileNAME 
+
 $array = @() 
- 
-#Powershell Function to delete files older than a certain age 
-$intFileAge = 8  #age of files in days 
-$strFilePath = $report_path #path to clean up 
-  
-#create filter to exclude folders and files newer than specified age 
-Filter Select-FileAge { 
-      param($days) 
-      If ($_.PSisContainer) {} 
-              # Exclude folders from result set 
-      ElseIf ($_.LastWriteTime -lt (Get-Date).AddDays($days * -1)) 
-            {$_} 
-} 
-get-Childitem -recurse $strFilePath | Select-FileAge $intFileAge 'CreationTime' |Remove-Item 
- 
-Function send_mail([string]$message,[string]$subject) { 
-    $emailFrom = "sender@mail.com" 
-    $emailTo = "to@mail.com" 
-    $emailCC = "cc@mail.com" 
-    $smtpServer = "smtp.mail.com" 
-    Send-MailMessage -SmtpServer $smtpServer -To $emailTo -Cc $emailCC -From $emailFrom -Subject $subject -Body $message -BodyAsHtml 
-} 
+
  
 $myForest = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest() 
 $dclist = $myforest.Sites | % { $_.Servers } 
@@ -218,7 +273,7 @@ foreach ($dcname in $dclist){
 $status_repl_ko = "<br><br><font face='Calibri' color='black'><i><b>Active Directory Replication Problem :</b></i><br>" 
 $status_repl_ok = "<br><br><font face='Calibri' color='black'><i><b>Active Directory Replication OK :</b></i><br>" 
 $subject = "Active Directory Replication status : "+$date 
-$message = "<br><br><font face='Calibri' color='black'><i>The full Active Directory Replication report is available <a href=" + $report_path + "\ad_repl_status_$date.html>here</a></i><br>" 
+$message = "<br><br><font face='Calibri' color='black'><i>The full Active Directory Replication report is available <a href=" + $file + ">here</a></i><br>" 
 $message += $status_repl_ko 
  
 if ($array | where {$_.repl_status -notlike "*successful*"}){ 
@@ -231,7 +286,12 @@ else {
  
 $message += $status_repl_ok 
 $message += $array | where {$_.repl_status -like "*successful*"} | select source_dc,nc,destination_dc,repl_status |ConvertTo-Html -Head $html_head -Property source_dc,nc,destination_dc,repl_status 
-$message | Out-File "$report_path\ad_repl_status_$date.html"
+$message | Out-File $file
+
+    $check = Test-Path $file 
+    If ($check-eq $true){Write-Host "File Created Successfuly" -ForegroundColor Green}
+    Else {Write-Host "File not created" -ForegroundColor Red}
+
 }
 Function Get-MPSOutlookConn2007 {
     Get-MailboxServer | Get-LogonStatistics | Select UserName,ClientVersion,LastAccessTime,ServerName
@@ -4030,7 +4090,7 @@ function Get-VirDirInfo
 Function Get-MPSEAPReport {
 Get-Mailbox -ResultSize Unlimited -Filter {EmailAddressPolicyEnabled -eq $false} |ft name, alias, emailaddresspolicyenabled, PrimarySmtpAddress  >> Report.txt
 }
-Function Get-MPSPublicFolderReplicationReport {
+Function Get-MPSPublicFolderReplicationReport{
 <#
 .SYNOPSIS
 Generates a report for Exchange 2010 Public Folder Replication.
@@ -4385,5 +4445,9 @@ if ($SendEmail)
         Remove-Item $attachment -Confirm:$false -Force
     }
 }
+
+Function Get-MPSDiscovery {
+
 }
 
+}
