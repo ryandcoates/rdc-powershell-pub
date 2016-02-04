@@ -55,7 +55,7 @@ $SFBModName = "LyncOnlineConnector"
 If ((Test-ModuleAvailableToLoad $SFBModName) -eq $true){
     Write-Host "Importing $SFBModName"
     Import-Module $SFBModName
-    $o365sfboSession = New-CsOnlineSession -Credential $o365Creds -OverrideAdminDomain "biib.onmicrosoft.com" .\@edptoastimage.png
+    $o365sfboSession = New-CsOnlineSession -Credential $o365Creds -OverrideAdminDomain "biib.onmicrosoft.com"
     Write-Host "Connecting to Skype for Business Online" -ForegroundColor Green
     Import-PSSession $o365sfboSession}
 Else {Write-Warning "Unable to connect to Skype for Business Online"}
