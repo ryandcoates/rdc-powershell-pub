@@ -21,6 +21,7 @@ Function Connect-O365 {
     
 .NOTES 
     Author     : Ryan Coates - ryan.coates@inquisitivegeek.com
+    Attrib     : Steve @ PowerShell Blogger for original codebase
 .LINK 
     Homepage   : http://inquisitivegeek.com
     ScriptPage : https://github.com/ryandcoates/rdc-powershell-pub/blob/master/Office365Connectivity.ps1
