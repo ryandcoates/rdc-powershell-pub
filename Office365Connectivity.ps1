@@ -27,11 +27,21 @@ Function Connect-O365 {
     ScriptPage : https://github.com/ryandcoates/rdc-powershell-pub/blob/master/Office365Connectivity.ps1
     ScriptRAW  : https://github.com/ryandcoates/rdc-powershell-pub/raw/master/Office365Connectivity.ps1
 #>        
+    [CmdletBinding()]
+    Param(
+    [Parameter(Mandatory=$false)]
+    [string]$client
+    )
 
 # Write out starting ErrorActionPreference prior to changing 
 $startErrorAction = $erroractionpreference
 $ea = "SilentlyContinue"
-Write-Host "$ea"
+$clientURLPrefix = "?DelegatedOrg="
+$clientURL = $ClientURLPrefix +$Client
+# Debug Code
+Write-Host "EA: $ea"
+Write-Host "Client: $client"
+Write-Host "Client URL: $clientURL"
 
 $o365Creds = Get-Credential # Get your 365 credentials for all connections
  
